@@ -4,7 +4,7 @@
 		<view>
 			<text>方案: {{chosen}}</text>
 		</view>
-		
+		<countdown></countdown>
 	</view>
 </template>
 
