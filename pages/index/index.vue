@@ -1,17 +1,25 @@
 <template>
 	<view class="container">
-		<uni-data-select 
-			label="方案" 
-			v-model="chosen" 
-			:localdata="selection"
-		></uni-data-select>
+		<view class="mode">
+			<uni-data-select
+				label="方案" 
+				v-model="chosen" 
+				:localdata="selection"
+			></uni-data-select>
+		</view>
 		<view class="timer">
 			<text>{{timerFormat}}</text>
 		</view>
-		<view>
-			<button @click="start">Start</button>
-			<button @click="stop">Stop</button>
-			<button @click="clear">Clear</button>
+		<view class="ctrlZone">
+			<view class="btn" @click="start" v-if="status !== 'timing'">
+				<image class="icon" src="/static/play_go.png" mode="aspectFit"></image>
+			</view>
+			<view class="btn" @click="stop" v-if="status === 'timing'">
+				<image class="icon" src="/static/play_pause.png" mode="aspectFit"></image>
+			</view>
+			<view class="btn" @click="clear" v-if="status !== 'ready'">
+				<image class="icon" src="/static/close-circle-fill.png" mode="aspectFit"></image>
+			</view>
 		</view>
 	</view>
 </template>
@@ -19,6 +27,15 @@
 <script>
 	let beepAudioCtx = null
 	let	boopAudioCtx = null
+	
+	function zeroPad(num, places) {
+	  var zero = places - num.toString().length + 1;
+	  return Array(+(zero > 0 && zero)).join("0") + num;
+	}
+	
+	function range(start, stop, step = 1) {
+		return Array(Math.ceil((stop - start) / step)).fill(start).map((x, y) => x + y * step)
+	}
 	
 	export default {
 		data() {
@@ -46,7 +63,8 @@
 				}else if(this.timer === -(this.timeline[0] + 1)) {
 					return "Go"
 				}else {
-					return Math.abs(this.timer)
+					let temp = Math.abs(this.timer)
+					return `${zeroPad(Math.floor(temp / 60), 2)} : ${zeroPad(temp % 60, 2)}`
 				}
 			},
 			timeline() {
@@ -55,10 +73,10 @@
 			beeps() {
 				let [initCountdown, timeSet] = this.timeline
 				
-				let temp = this.range(-initCountdown, 0)
+				let temp = range(-initCountdown, 0)
 				
 				for(let [endPt, countdown] of timeSet) {
-					temp = temp.concat(this.range(endPt - countdown, endPt))
+					temp = temp.concat(range(endPt - countdown, endPt))
 				}
 				
 				return temp
@@ -95,7 +113,7 @@
 			beepAudioCtx = wx.createInnerAudioContext({
 				useWebAudioImplement: true
 			})
-			beepAudioCtx.src = '/static/beep-08b.mp3'
+			beepAudioCtx.src = '/static/start.mp3'
 			
 			boopAudioCtx = wx.createInnerAudioContext({
 				useWebAudioImplement: true
@@ -114,14 +132,16 @@
 				this.timer++
 			},
 			start() {
-				// this.initTl()
-				this.timeId = setInterval(this.add, 1000)
-				this.status = "timing"
+				if(this.timeId === null) {
+					this.timeId = setInterval(this.add, 1000)
+					this.status = "timing"
+				}
 			},
 			stop() {
 				if(this.timeId !== null) {
 					clearInterval(this.timeId)
 					this.timeId = null
+					this.status = "hang"
 				}
 			},
 			clear() {
@@ -129,10 +149,11 @@
 				this.status = "ready"
 				let initCountdown = this.timeline[0]
 				this.timer = -(initCountdown + 1)
-			},
-			range(start, stop, step = 1) {
-				return Array(Math.ceil((stop - start) / step)).fill(start).map((x, y) => x + y * step)
 			}
+			// },
+			// range(start, stop, step = 1) {
+			// 	return Array(Math.ceil((stop - start) / step)).fill(start).map((x, y) => x + y * step)
+			// }
 		}
 	}
 </script>
@@ -140,17 +161,34 @@
 <style>
 	.container {
 		padding: 20px;
-		font-size: 14px;
+		font-size: 24px;
 		line-height: 24px;
 		height: 100%;
 		display: flex;
 		flex-direction: column;
 		justify-content: space-between;	
 	}
+	.mode {
+		flex-grow: 2;
+	}
 	.timer {
 		align-self: center;
 		font-size: 64px;
 		font-weight: bold;
 		font-style: italic;
+		flex-grow: 2;
+		/* height: 50% */
+	}
+	.ctrlZone {
+		display: flex;
+		justify-content: space-around;
+		flex-grow: 1;
+		height: 20%
+	}
+	.btn {
+		width: 20%;
+	}
+	.icon {
+		width: 100%;
 	}
 </style>
