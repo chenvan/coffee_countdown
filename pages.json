@@ -4,7 +4,16 @@
 		"style": {
 			"navigationBarTitleText": "咖啡时钟"
 		}
-	}],
+	}    ,{
+            "path" : "pages/edit/edit",
+            "style" :                                                                                    
+            {
+                "navigationBarTitleText": "咖啡时钟",
+                "enablePullDownRefresh": false
+            }
+            
+        }
+    ],
 	"globalStyle": {
 		"navigationBarTextStyle": "black",
 		"navigationBarTitleText": "咖啡时钟",

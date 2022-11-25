@@ -10,6 +10,9 @@
 					v-model="chosen" 
 					:localdata="selection"
 				></uni-data-select>
+				<view class="editBtn" @click="toEdit">
+					编辑方案
+				</view>
 			</view>
 			<view class="timer">
 				<text>{{timerFormat}}</text>
@@ -186,11 +189,9 @@
 			}
 			
 		},
-		async onUnload() {
-			// 这里有问题
-			console.log("unload")
-			beepAudioCtx = null
-			boopAudioCtx = null
+		async onHide() {
+			// beepAudioCtx = null
+			// boopAudioCtx = null
 			
 			await uni.setStorage({
 				key: "lastChosen",
@@ -219,6 +220,11 @@
 				this.status = "ready"
 				let initCountdown = this.timeline[0]
 				this.timer = -(initCountdown + 1)
+			},
+			toEdit() {
+				uni.navigateTo({
+					url: "/pages/edit/edit"
+				})
 			}
 		}
 	}
@@ -227,8 +233,6 @@
 <style>
 	.container {
 		padding: 20px;
-		font-size: 24px;
-		line-height: 24px;
 		height: 100%;
 	}
 	.loading {
@@ -246,6 +250,15 @@
 	}
 	.mode {
 		flex-grow: 2;
+		display: flex;
+		flex-direction: column;
+	}
+	.editBtn {
+		align-self: flex-end;
+		margin-top: 12px;
+		font-size: 16px;
+		font-weight: 300;
+		color: cadetblue;
 	}
 	.timer {
 		align-self: center;
@@ -253,7 +266,6 @@
 		font-weight: bold;
 		font-style: italic;
 		flex-grow: 2;
-		/* height: 50% */
 	}
 	.ctrlZone {
 		display: flex;
@@ -266,5 +278,12 @@
 	}
 	.icon {
 		width: 100%;
+	}
+	/* uni-data-select */
+	.uni-select__selector-item text {
+		font-size: 18px;
+	}
+	.uni-select__input-text {
+		font-size: 18px;
 	}
 </style>
