@@ -4,15 +4,18 @@
 			<text>Loading</text>
 		</view>
 		<view v-else class="app">
-			<view class="mode">
+			<view class="plan">
 				<uni-data-select
 					label="方案" 
-					v-model="chosen" 
+					v-model="lastSelect" 
 					:localdata="selection"
 				></uni-data-select>
 				<view class="editBtn" @click="toEdit">
 					编辑方案
 				</view>
+			</view>
+			<view class="detail">
+				<text>{{detail}}</text>
 			</view>
 			<view class="timer">
 				<text>{{timerFormat}}</text>
@@ -48,11 +51,8 @@
 	export default {
 		data() {
 			return {
-				chosen: null,
-				modeDict: {
-					"nameList": [],
-					"timelineList": []
-				},
+				lastSelect: null,
+				plans: [],
 				timer: null,
 				timeId: null,
 				status: "loading",
@@ -60,31 +60,31 @@
 		},
 		computed: {
 			selection() {
-				return this.modeDict.nameList.map((name, index) => {
+				return this.plans.map((mode, index) => {
 					return {
 						"value": index,
-						"text": name
+						"text": mode.name
 					}
 				})
-			},
-			timelineList() {
-				return this.modeDict.timelineList
 			},
 			timerFormat() {
 				if(this.status === "loading") {
 					return ""
 				}else if(this.status === "ready") {
 					return "Ready"
-				}else if(this.timer === -(this.timeline[0] + 1)) {
+				}else if(this.timer === -(this.chosenMode.initCd + 1)) {
 					return "Go"
 				}else {
 					let temp = Math.abs(this.timer)
 					return `${zeroPad(Math.floor(temp / 60), 2)} : ${zeroPad(temp % 60, 2)}`
 				}
 			},
-			timeline() {
-				if(this.chosen !== null && this.timelineList.length > 0) {
-					return this.timelineList[this.chosen]
+			detail() {
+				return this.chosenMode === null ? "" : `[${this.chosenMode.keyPts.join(", ")}]`
+			},
+			chosenMode() {
+				if(this.lastSelect !== null && this.plans.length > 0) {
+					return this.plans[this.lastSelect]
 				} else {
 					return null
 				}
@@ -92,14 +92,14 @@
 			beeps() {
 				let temp = []
 				
-				if(this.timeline !== null) {
-					let [initCountdown, timeSet] = this.timeline
+				if(this.chosenMode !== null) {
+					let {initCd, keyPtCd, keyPts} = this.chosenMode
 					
-					temp = temp.concat(range(-initCountdown, 0))
+					temp = temp.concat(range(-initCd, 0))
 					
-					for(let [endPt, countdown] of timeSet) {
-						temp = temp.concat(range(endPt - countdown, endPt))
-					}
+					keyPts.forEach(keyPt => {
+						temp = temp.concat(range(keyPt - keyPtCd, keyPt))
+					})
 				}
 				
 				return temp
@@ -107,21 +107,16 @@
 			boops() {
 				let temp = [0]
 				
-				if(this.timeline !== null) {
-					let timeSet = this.timeline[1]
-					
-					for(let [endPt, _] of timeSet) {
-						temp = temp.concat(endPt)
-					}
+				if(this.chosenMode !== null) {
+					temp = temp.concat(this.chosenMode.keyPts)
 				}
 				
 				return temp
 			}
 		},
 		watch: {
-			timeline() {
-				// timeline 变成另一个有效的 timeline
-				if(this.timeline !== null) {
+			chosenMode() {
+				if(this.chosenMode !== null) {
 					this.clear()
 				}
 			},
@@ -152,38 +147,56 @@
 			try {
 				let storage =  await Promise.all([
 					uni.getStorage({
-						key: "lastChosen"
+						key: "lastSelect"
 					}),
 					uni.getStorage({
-						key: "modeDict",
+						key: "plans",
 					})
 				])
 				
-				this.chosen = storage[0].data
-				this.modeDict = storage[1].data
+				this.lastSelect = storage[0].data
+				this.plans = storage[1].data
 				
 			} catch(err) {
 				console.log(err)
 				console.log("set default mode")
 				
-				this.chosen = 0
-				this.modeDict = {
-					nameList: ["聪明杯", "爱乐压", "金龙鱼冲泡法"],
-					timelineList: [
-						[3, [[180, 3], [210, 3]]],
-						[3, [[120, 3], [150, 3]]],
-						[3, [[30, 3], [60, 3]]],
-					]
-				}
+				this.lastSelect = 0
+				this.plans = [
+					{
+						name: "聪明杯",
+						initCd: 3,
+						keyPtCd: 3,
+						keyPts: [180, 210]
+					},
+					{
+						name: "爱乐压",
+						initCd: 3,
+						keyPtCd: 3,
+						keyPts: [120, 150]
+					},
+					{
+						name: "金龙鱼冲泡法",
+						initCd: 3,
+						keyPtCd: 3,
+						keyPts: [30, 60]
+					},
+					{
+						name: "霍夫曼 V60",
+						initCd: 3,
+						keyPtCd: 3,
+						keyPts: [45, 70, 90, 110, 180]
+					},
+				]
 				
 				await Promise.all([
 					uni.setStorage({
-						key: "modeDict",
-						data: this.modeDict
+						key: "plans",
+						data: this.plans
 					}),
 					uni.setStorage({
-						key: "lastChosen",
-						data: this.chosen
+						key: "lastSelect",
+						data: this.lastSelect
 					}),
 				])
 			}
@@ -194,8 +207,8 @@
 			// boopAudioCtx = null
 			
 			await uni.setStorage({
-				key: "lastChosen",
-				data: this.chosen
+				key: "lastSelect",
+				data: this.lastSelect
 			})
 		},
 		methods: {
@@ -203,7 +216,7 @@
 				this.timer++
 			},
 			start() {
-				if(this.timeId === null && this.chosen !== "") {
+				if(this.timeId === null && this.lastSelect !== "") {
 					this.timeId = setInterval(this.add, 1000)
 					this.status = "timing"
 				}
@@ -218,12 +231,11 @@
 			clear() {
 				this.stop()
 				this.status = "ready"
-				let initCountdown = this.timeline[0]
-				this.timer = -(initCountdown + 1)
+				this.timer = -(this.chosenMode.initCd + 1)
 			},
 			toEdit() {
 				uni.navigateTo({
-					url: "/pages/edit/edit"
+					url: "/pages/mode/mode"
 				})
 			}
 		}
@@ -248,8 +260,7 @@
 		justify-content: space-between;	
 		height: 100%;
 	}
-	.mode {
-		flex-grow: 2;
+	.plan {
 		display: flex;
 		flex-direction: column;
 	}
@@ -260,24 +271,33 @@
 		font-weight: 300;
 		color: cadetblue;
 	}
+	.detail {
+		margin-top: 24px;
+		font-size: 16px;
+		color: grey;
+		font-style: normal;
+		align-self: center;
+	}
 	.timer {
 		align-self: center;
 		font-size: 64px;
 		font-weight: bold;
 		font-style: italic;
 		flex-grow: 2;
+		display: flex;
+		align-items: center;
 	}
 	.ctrlZone {
 		display: flex;
 		justify-content: space-around;
-		flex-grow: 1;
-		height: 20%
+		max-height: 15%;
 	}
 	.btn {
 		width: 20%;
 	}
 	.icon {
 		width: 100%;
+		max-height: 100%;
 	}
 	/* uni-data-select */
 	.uni-select__selector-item text {

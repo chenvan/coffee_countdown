@@ -13,6 +13,15 @@
             }
             
         }
+        ,{
+            "path" : "pages/plan/plan",
+            "style" :                                                                                    
+            {
+                "navigationBarTitleText": "",
+                "enablePullDownRefresh": false
+            }
+            
+        }
     ],
 	"globalStyle": {
 		"navigationBarTextStyle": "black",
