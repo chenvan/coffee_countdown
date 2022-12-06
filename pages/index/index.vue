@@ -3,7 +3,7 @@
 		<view v-if="status === 'loading'" class="loading">
 			<text>Loading</text>
 		</view>
-		<view v-else class="app">
+		<view v-else class="main">
 			<view class="plan">
 				<uni-data-select
 					label="方案" 
@@ -153,41 +153,42 @@
 						key: "plans",
 					})
 				])
-				
+
 				this.lastSelect = storage[0].data
 				this.plans = storage[1].data
 				
 			} catch(err) {
 				console.log(err)
 				console.log("set default mode")
+			
 				
 				this.lastSelect = 0
 				this.plans = [
-					{
-						name: "聪明杯",
-						initCd: 3,
-						keyPtCd: 3,
-						keyPts: [180, 210]
-					},
+					// {
+					// 	name: "聪明杯",
+					// 	initCd: 3,
+					// 	keyPtCd: 3,
+					// 	keyPts: [180, 210]
+					// },
 					{
 						name: "爱乐压",
 						initCd: 3,
 						keyPtCd: 3,
 						keyPts: [120, 150]
 					},
-					{
-						name: "金龙鱼冲泡法",
-						initCd: 3,
-						keyPtCd: 3,
-						keyPts: [30, 60]
-					},
+					// {
+					// 	name: "金龙鱼冲泡法",
+					// 	initCd: 3,
+					// 	keyPtCd: 3,
+					// 	keyPts: [30, 60]
+					// },
 					{
 						name: "霍夫曼 V60",
 						initCd: 3,
 						keyPtCd: 3,
 						keyPts: [45, 70, 90, 110, 180]
 					},
-				]
+				],
 				
 				await Promise.all([
 					uni.setStorage({
@@ -202,10 +203,13 @@
 			}
 			
 		},
+		onShow () {
+			if(getApp().globalData.isChange) {
+				getApp().globalData.isChange = false
+			}
+		},
 		async onHide() {
-			// beepAudioCtx = null
-			// boopAudioCtx = null
-			
+
 			await uni.setStorage({
 				key: "lastSelect",
 				data: this.lastSelect
@@ -234,9 +238,14 @@
 				this.timer = -(this.chosenMode.initCd + 1)
 			},
 			toEdit() {
+				getApp().globalData.lastSelect = this.lastSelect
+				getApp().globalData.plans = this.plans
+				
 				uni.navigateTo({
-					url: "/pages/mode/mode"
+					url: "/pages/plan/plan"
 				})
+				
+				
 			}
 		}
 	}
@@ -254,7 +263,7 @@
 		justify-content: center;
 		align-items: center;
 	}
-	.app {
+	.main {
 		display: flex;
 		flex-direction: column;
 		justify-content: space-between;	
@@ -293,7 +302,7 @@
 		max-height: 15%;
 	}
 	.btn {
-		width: 20%;
+		width: 64px;
 	}
 	.icon {
 		width: 100%;

@@ -1,19 +1,28 @@
 <template>
-	<view v-if="status === 'loading'" class="loading">
-		<text>Loading</text>
-	</view>
-	<view v-else class="page">
-		<uni-swipe-action>
-		    <uni-swipe-action-item 
-				v-for="(name, index) in nameList"
-				:key="index + name"
-				:right-options="options"  
-				@click="onClick" 
-				@change="swipeChange($event, index)"
-			>
-				<view>{{name}}</view>
-		    </uni-swipe-action-item>
-		</uni-swipe-action>
+	<view class="container">
+		<!-- <view v-if="status === 'loading'" class="loading">
+			<text>Loading</text>
+		</view> -->
+		<!-- <view v-else class="main"> -->
+		<view class="main">
+			<uni-swipe-action>
+			    <uni-swipe-action-item 
+					v-for="(mode, index) in plans"
+					:key="index+mode.name"
+					:right-options="options"  
+					@click="onClick" 
+					@change="swipeChange($event, index)"
+				>
+					<view class="item">
+						<view class="title">{{mode.name}}</view>
+						<view class="detail">{{mode.keyPts}}</view>
+					</view>
+			    </uni-swipe-action-item>
+			</uni-swipe-action>
+		</view>
+		<view class="btn">
+			<image class="icon" src="/static/add.png" mode="widthFix"></image>
+		</view>
 	</view>
 </template>
 
@@ -21,8 +30,8 @@
 	export default {
 		data() {
 			return {
-				status: "loading",
-				nameList: [],
+				// status: "loading",
+				plans: [],
 				options:[
 					{
 						text: '编辑',
@@ -52,22 +61,47 @@
 				})
 			}
 		}, 
-		async onLoad() {
-			try {
-				let { data } =  await uni.getStorage({
-					key: "modeDict",
-				})
-				
-				this.nameList = data.nameList
-				this.status = "done"
-				
-			} catch(err) {
-				console.log(err)
-			}
+		onLoad() {
+			this.plans = getApp().globalData.plans
+			this.status = "done"
 		}
 	}
 </script>
 
 <style>
-
+	.container {
+		padding-left: 8px;
+		height: 100%;
+		display: flex;
+		flex-direction: column;
+	}
+	.loading {
+		display: flex;
+		height: 100%;
+		flex-direction: column;
+		justify-content: center;
+		align-items: center;
+	}
+	.main {
+		
+	}
+	.item {
+		padding: 4px 0px;
+	}
+	.title {
+		font-size: 24px;
+	}
+	.detail {
+		font-size: 12px;
+		font-weight: 100;
+	}
+	.btn {
+		width: 64px;
+		align-self: center;
+		margin-top: 24px;
+	}
+	.icon {
+		width: 100%;
+		max-height: 100%;
+	}
 </style>
