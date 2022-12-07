@@ -21,8 +21,7 @@ number
 }
 
 # 如何更新数据
-使用 vuex 管理数据
-plans 可以通过页面交流
+通过 globalData 使 plans, lastSelect 可以通过页面交流
 
 lastSelect 删除的时候, lastSelect也需要更新
 

@@ -164,24 +164,24 @@
 				
 				this.lastSelect = 0
 				this.plans = [
-					// {
-					// 	name: "聪明杯",
-					// 	initCd: 3,
-					// 	keyPtCd: 3,
-					// 	keyPts: [180, 210]
-					// },
+					{
+						name: "聪明杯",
+						initCd: 3,
+						keyPtCd: 3,
+						keyPts: [180, 210]
+					},
 					{
 						name: "爱乐压",
 						initCd: 3,
 						keyPtCd: 3,
 						keyPts: [120, 150]
 					},
-					// {
-					// 	name: "金龙鱼冲泡法",
-					// 	initCd: 3,
-					// 	keyPtCd: 3,
-					// 	keyPts: [30, 60]
-					// },
+					{
+						name: "金龙鱼冲泡法",
+						initCd: 3,
+						keyPtCd: 3,
+						keyPts: [30, 60]
+					},
 					{
 						name: "霍夫曼 V60",
 						initCd: 3,
@@ -206,6 +206,8 @@
 		onShow () {
 			if(getApp().globalData.isChange) {
 				getApp().globalData.isChange = false
+				this.lastSelect = getApp().globalData.lastSelect
+				this.plans = getApp().globalData.plans
 			}
 		},
 		async onHide() {

@@ -1,23 +1,23 @@
 {
-	"pages": [{
-		"path": "pages/index/index",
-		"style": {
-			"navigationBarTitleText": "咖啡时钟"
-		}
-	}    ,{
-            "path" : "pages/edit/edit",
-            "style" :                                                                                    
-            {
-                "navigationBarTitleText": "咖啡时钟",
+	"pages": [
+		{
+			"path": "pages/index/index",
+			"style": {
+				"navigationBarTitleText": "咖啡时钟"
+			}
+		},
+		{
+            "path" : "pages/plan/plan",
+            "style" : {
+                "navigationBarTitleText": "方案列表",
                 "enablePullDownRefresh": false
             }
             
-        }
-        ,{
-            "path" : "pages/plan/plan",
-            "style" :                                                                                    
-            {
-                "navigationBarTitleText": "",
+        },
+		{
+            "path" : "pages/edit/edit",
+            "style" : {
+                "navigationBarTitleText": "编辑方案",
                 "enablePullDownRefresh": false
             }
             

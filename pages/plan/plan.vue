@@ -1,17 +1,12 @@
 <template>
 	<view class="container">
-		<!-- <view v-if="status === 'loading'" class="loading">
-			<text>Loading</text>
-		</view> -->
-		<!-- <view v-else class="main"> -->
 		<view class="main">
 			<uni-swipe-action>
 			    <uni-swipe-action-item 
 					v-for="(mode, index) in plans"
 					:key="index+mode.name"
 					:right-options="options"  
-					@click="onClick" 
-					@change="swipeChange($event, index)"
+					@click="onClick($event, index)" 
 				>
 					<view class="item">
 						<view class="title">{{mode.name}}</view>
@@ -20,9 +15,15 @@
 			    </uni-swipe-action-item>
 			</uni-swipe-action>
 		</view>
-		<view class="btn">
+		<view class="btn" @click="addPlan">
 			<image class="icon" src="/static/add.png" mode="widthFix"></image>
 		</view>
+		<uni-popup ref="loading" type="center">
+			<text>Loading</text>
+		</uni-popup>
+		<uni-popup ref="del" type="center">
+			<uni-popup-dialog title="确认删除" @confirm="del"></uni-popup-dialog>
+		</uni-popup>
 	</view>
 </template>
 
@@ -32,6 +33,7 @@
 			return {
 				// status: "loading",
 				plans: [],
+				delId: undefined,
 				options:[
 					{
 						text: '编辑',
@@ -48,16 +50,44 @@
 			}
 		},
 		methods: {
-			onClick(e){
-				console.log(e)
-				console.log('点击了'+(e.position === 'left' ? '左侧' : '右侧') + e.content.text + '按钮')
+			onClick(e, id){
+				if(e.content.text === "编辑") {
+					uni.navigateTo({
+						url: `/pages/edit/edit?id=${id}`
+					})
+				} else {
+					this.delId = id
+					this.$refs.del.open()
+				}
 			},
-			swipeChange(e,index){
-				console.log('当前状态：'+ e +'，下标：' + index)
-			},
-			toEdit() {
+			addPlan() {
 				uni.navigateTo({
-					url: "/pages/edit/edit"
+					url: `/pages/edit/edit`
+				})
+			},
+			async del() {
+				let lastSelect = getApp().globalData.lastSelect
+				
+				if(lastSelect >= this.delId) {
+					getApp().globalData.lastSelect = lastSelect === this.delId ? 0 : lastSelect - 1
+				}
+				
+				let temp = [...this.plans]
+				temp.splice(this.delId, 1)
+				this.plans = temp
+
+				getApp().globalData.isChange = true
+				getApp().globalData.plans = this.plans
+				
+				// save
+				this.$refs.loading.open()
+				await this.save()
+				this.$refs.loading.close()
+			},
+			async save() {
+				await uni.setStorage({
+					key: "plans",
+					data: this.plans
 				})
 			}
 		}, 
