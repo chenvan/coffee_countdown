@@ -80,20 +80,27 @@
 				getApp().globalData.plans = this.plans
 				
 				// save
-				this.$refs.loading.open()
 				await this.save()
-				this.$refs.loading.close()
+				
 			},
 			async save() {
+				this.$refs.loading.open()
 				await uni.setStorage({
 					key: "plans",
 					data: this.plans
 				})
+				this.$refs.loading.close()
 			}
 		}, 
 		onLoad() {
 			this.plans = getApp().globalData.plans
-			this.status = "done"
+		},
+		async onShow() {
+			if(getApp().globalData.isChange) {
+				await this.save()
+				this.plans = getApp().globalData.plans
+				getApp().globalData.isChange = false
+			}
 		}
 	}
 </script>
