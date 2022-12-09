@@ -20,7 +20,7 @@
 			<view class="timer">
 				<text>{{timerFormat}}</text>
 			</view>
-			<view class="ctrlZone">
+			<view  v-if="status !== 'loading'" class="ctrlZone">
 				<view class="btn" @click="start" v-if="status !== 'timing'">
 					<image class="icon" src="/static/play_go.png" mode="aspectFit"></image>
 				</view>
@@ -121,14 +121,13 @@
 				}
 			},
 			timer(newT) {
-				if(this.beeps.includes(newT)) {
-					console.log(`${newT} beep!`)
-					beepAudioCtx.play()
-				}
-				
+				// 只能发一种声音, boop 的权重比 beep 先
 				if(this.boops.includes(newT)) {
 					console.log(`${newT} boop!!!`)
 					boopAudioCtx.play()
+				} else if(this.beeps.includes(newT)) {
+					console.log(`${newT} beep!`)
+					beepAudioCtx.play()
 				}
 			}
 		},
@@ -204,14 +203,13 @@
 			
 		},
 		onShow () {
-			if(getApp().globalData.isChange) {
-				getApp().globalData.isChange = false
+			if(getApp().globalData.isPlanChange) {
+				getApp().globalData.isPlanChange = false
 				this.lastSelect = getApp().globalData.lastSelect
 				this.plans = getApp().globalData.plans
 			}
 		},
 		async onHide() {
-
 			await uni.setStorage({
 				key: "lastSelect",
 				data: this.lastSelect
@@ -255,7 +253,7 @@
 
 <style>
 	.container {
-		padding: 20px;
+		padding: 16px 16px 0 16px;
 		height: 100%;
 	}
 	.loading {
@@ -301,7 +299,13 @@
 	.ctrlZone {
 		display: flex;
 		justify-content: space-around;
-		max-height: 15%;
+		/* max-height: 15%; */
+		/* position: fixed;
+		left: 0;
+		bottom: 0;
+		width: 100%;
+		z-index: 1000; */
+		height: 100px;
 	}
 	.btn {
 		width: 64px;

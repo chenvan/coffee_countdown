@@ -65,7 +65,7 @@
 				let temp = this.fromData.keyPts.trim().split(/\s+/).map(value => Number(value))
 				temp.sort((a, b) => a - b)
 				
-				console.log(temp)
+				// console.log(temp)
 				
 				let plan = {
 					name: this.fromData.name,
@@ -80,7 +80,7 @@
 					getApp().globalData.plans[this.id] = plan
 				}
 				
-				getApp().globalData.isChange = true
+				getApp().globalData.isEditChange = true
 				
 				uni.navigateBack()
 			}

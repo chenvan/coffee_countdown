@@ -3,7 +3,8 @@
 		globalData: {
 			lastSelect: null,
 			plans: null,
-			isChange: false
+			isPlanChange: false,
+			isEditChange: false
 		},
 		onLaunch: function() {
 			console.warn('当前组件仅支持 uni_modules 目录结构 ，请升级 HBuilderX 到 3.1.0 版本以上！')
@@ -26,7 +27,7 @@
 	// 设置整个项目的背景色
 	page {
 		background-color: #f5f5f5;
-		height: 90vh;
+		height: 95vh;
 		width: 100%
 	}
 

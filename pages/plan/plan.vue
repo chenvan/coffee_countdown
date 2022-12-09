@@ -15,14 +15,14 @@
 			    </uni-swipe-action-item>
 			</uni-swipe-action>
 		</view>
-		<view class="btn" @click="addPlan">
+		<view class="ctrlZone" @click="addPlan">
 			<image class="icon" src="/static/add.png" mode="widthFix"></image>
 		</view>
-		<uni-popup ref="loading" type="center">
-			<text>Loading</text>
+		<uni-popup ref="errMsg" type="center">
+			<uni-popup-dialog content="保存方案失败"></uni-popup-dialog>
 		</uni-popup>
 		<uni-popup ref="del" type="center">
-			<uni-popup-dialog title="确认删除" @confirm="del"></uni-popup-dialog>
+			<uni-popup-dialog content="确认删除" @confirm="del"></uni-popup-dialog>
 		</uni-popup>
 	</view>
 </template>
@@ -72,34 +72,42 @@
 					getApp().globalData.lastSelect = lastSelect === this.delId ? 0 : lastSelect - 1
 				}
 				
-				let temp = [...this.plans]
-				temp.splice(this.delId, 1)
-				this.plans = temp
+				let shadowPlans = [...this.plans]
+				shadowPlans.splice(this.delId, 1)
+				this.plans = shadowPlans
 
-				getApp().globalData.isChange = true
+				getApp().globalData.isPlanChange = true
+				// 在 Plan 进行删除后, 需要更新 globalData
 				getApp().globalData.plans = this.plans
 				
 				// save
-				await this.save()
+				await this.savePlans()
 				
 			},
-			async save() {
-				this.$refs.loading.open()
-				await uni.setStorage({
-					key: "plans",
-					data: this.plans
-				})
-				this.$refs.loading.close()
+			async savePlans(newPlans) {
+				// 存 this.plans, 因此使用前必需先更新 plans
+				
+				// 保存不会对操作影响?
+				try {
+					await uni.setStorage({
+						key: "plans",
+						data: this.plans
+					})
+				} catch(err) {
+					this.$refs.errMsg.open()
+				}
 			}
 		}, 
 		onLoad() {
 			this.plans = getApp().globalData.plans
 		},
 		async onShow() {
-			if(getApp().globalData.isChange) {
-				await this.save()
+			if(getApp().globalData.isEditChange) {
+				// Edit页面对方案进行了新增或者修改
 				this.plans = getApp().globalData.plans
-				getApp().globalData.isChange = false
+				await this.savePlans()
+				getApp().globalData.isPlanChange = true
+				getApp().globalData.isEditChange = false
 			}
 		}
 	}
@@ -132,7 +140,7 @@
 		font-size: 12px;
 		font-weight: 100;
 	}
-	.btn {
+	.ctrlZone {
 		width: 64px;
 		align-self: center;
 		margin-top: 24px;
