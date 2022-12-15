@@ -1,5 +1,5 @@
 <template>
-	<view class="container">
+	<view class="main">
 		<uni-forms :modelValue="fromData" label-position="top">
 			<uni-forms-item label="方案名" name="name">
 				<uni-easyinput type="text" v-model="fromData.name"></uni-easyinput>
@@ -101,7 +101,7 @@
 </script>
 
 <style>
-	.container {
+	.main {
 		padding: 8px;
 		height: 100%;
 		display: flex;

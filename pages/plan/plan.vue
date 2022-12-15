@@ -1,28 +1,28 @@
 <template>
-	<view class="container">
-		<view class="main">
-			<uni-swipe-action>
-			    <uni-swipe-action-item 
-					v-for="(mode, index) in plans"
-					:key="index+mode.name"
-					:right-options="options"  
-					@click="onClick($event, index)" 
-				>
-					<view class="item">
-						<view class="title">{{mode.name}}</view>
-						<view class="detail">{{mode.keyPts}}</view>
-					</view>
-			    </uni-swipe-action-item>
-			</uni-swipe-action>
-		</view>
-		<view class="ctrlZone" @click="addPlan">
-			<image class="icon" src="/static/add.png" mode="widthFix"></image>
+	<view class="main">
+		<uni-swipe-action>
+			<uni-swipe-action-item 
+				v-for="(mode, index) in plans"
+				:key="index"
+				:right-options="options"  
+				@click="onDel(index)" 
+			>
+				<view class="item" @click="toEdit(index)">
+					<view class="title">{{mode.name}}</view>
+					<view class="detail">{{mode.keyPts}}</view>
+				</view>
+			</uni-swipe-action-item>
+		</uni-swipe-action>
+		<view class="ctrlZone" >
+			<view @click="addPlan">
+				<image class="icon" src="/static/add.png" mode="widthFix"></image>
+			</view>
 		</view>
 		<uni-popup ref="errMsg" type="center">
 			<uni-popup-dialog content="保存方案失败"></uni-popup-dialog>
 		</uni-popup>
-		<uni-popup ref="del" type="center">
-			<uni-popup-dialog content="确认删除" @confirm="del"></uni-popup-dialog>
+		<uni-popup ref="delConfirm" type="center">
+			<uni-popup-dialog content="确认删除" @confirm="delPlan"></uni-popup-dialog>
 		</uni-popup>
 	</view>
 </template>
@@ -31,41 +31,32 @@
 	export default {
 		data() {
 			return {
-				// status: "loading",
 				plans: [],
 				delId: undefined,
-				options:[
-					{
-						text: '编辑',
-						style: {
-							backgroundColor: '#007aff'
-						}
-					}, {
-						text: '删除',
-						style: {
-							backgroundColor: '#dd524d'
-						}
+				options:[{
+					text: '删除',
+					style: {
+						backgroundColor: '#dd524d'
 					}
-				]
+				}]
 			}
 		},
 		methods: {
-			onClick(e, id){
-				if(e.content.text === "编辑") {
-					uni.navigateTo({
-						url: `/pages/edit/edit?id=${id}`
-					})
-				} else {
-					this.delId = id
-					this.$refs.del.open()
-				}
+			onDel(id){
+				this.delId = id
+				this.$refs.delConfirm.open()
+			},
+			toEdit(id) {
+				uni.navigateTo({
+					url: `/pages/edit/edit?id=${id}`
+				})
 			},
 			addPlan() {
 				uni.navigateTo({
 					url: `/pages/edit/edit`
 				})
 			},
-			async del() {
+			async delPlan() {
 				let lastSelect = getApp().globalData.lastSelect
 				
 				if(lastSelect >= this.delId) {
@@ -114,7 +105,7 @@
 </script>
 
 <style>
-	.container {
+	.main {
 		padding-left: 8px;
 		height: 100%;
 		display: flex;
@@ -127,9 +118,6 @@
 		justify-content: center;
 		align-items: center;
 	}
-	.main {
-		
-	}
 	.item {
 		padding: 4px 0px;
 	}
@@ -141,12 +129,15 @@
 		font-weight: 100;
 	}
 	.ctrlZone {
-		width: 64px;
-		align-self: center;
-		margin-top: 24px;
+		position: fixed;
+		bottom: 32px;
+		right:0;
+		width: 100%;
+		display: flex;
+		justify-content: space-around;
 	}
 	.icon {
-		width: 100%;
-		max-height: 100%;
+		width: 64px;
+		height: 64px;
 	}
 </style>

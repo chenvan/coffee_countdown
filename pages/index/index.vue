@@ -1,41 +1,40 @@
 <template>
-	<view class="container">
-		<view v-if="status === 'loading'" class="loading">
-			<text>Loading</text>
+	<view v-if="status === 'loading'" class="loading">
+		<text>Loading</text>
+	</view>
+	<view v-else class="main">
+		<view class="plan">
+			<uni-data-select
+				label="方案" 
+				v-model="lastSelect" 
+				:localdata="selection"
+			></uni-data-select>
+			<view class="toPlanBtn" @click="toPlan">
+				编辑方案
+			</view>
 		</view>
-		<view v-else class="main">
-			<view class="plan">
-				<uni-data-select
-					label="方案" 
-					v-model="lastSelect" 
-					:localdata="selection"
-				></uni-data-select>
-				<view class="editBtn" @click="toEdit">
-					编辑方案
-				</view>
+		<view class="detail">
+			<text>{{detail}}</text>
+		</view>
+		<view class="timer">
+			<text>{{timerFormat}}</text>
+		</view>
+		<view class="ctrlZone">
+			<view class="btn" @click="start" v-if="status !== 'timing'">
+				<image class="icon" src="/static/play_go.png" mode="aspectFit"></image>
 			</view>
-			<view class="detail">
-				<text>{{detail}}</text>
+			<view class="btn" @click="stop" v-if="status === 'timing'">
+				<image class="icon" src="/static/play_pause.png" mode="aspectFit"></image>
 			</view>
-			<view class="timer">
-				<text>{{timerFormat}}</text>
-			</view>
-			<view  v-if="status !== 'loading'" class="ctrlZone">
-				<view class="btn" @click="start" v-if="status !== 'timing'">
-					<image class="icon" src="/static/play_go.png" mode="aspectFit"></image>
-				</view>
-				<view class="btn" @click="stop" v-if="status === 'timing'">
-					<image class="icon" src="/static/play_pause.png" mode="aspectFit"></image>
-				</view>
-				<view class="btn" @click="clear" v-if="status !== 'ready'">
-					<image class="icon" src="/static/close-circle-fill.png" mode="aspectFit"></image>
-				</view>
+			<view class="btn" @click="clear" v-if="status !== 'ready'">
+				<image class="icon" src="/static/close-circle-fill.png" mode="aspectFit"></image>
 			</view>
 		</view>
 	</view>
 </template>
 
 <script>
+	
 	let beepAudioCtx = null
 	let	boopAudioCtx = null
 	
@@ -164,24 +163,28 @@
 				this.lastSelect = 0
 				this.plans = [
 					{
+						// id: nanoid(),
 						name: "聪明杯",
 						initCd: 3,
 						keyPtCd: 3,
 						keyPts: [180, 210]
 					},
 					{
+						// id: nanoid(),
 						name: "爱乐压",
 						initCd: 3,
 						keyPtCd: 3,
 						keyPts: [120, 150]
 					},
 					{
+						// id: nanoid(),
 						name: "金龙鱼冲泡法",
 						initCd: 3,
 						keyPtCd: 3,
 						keyPts: [30, 60]
 					},
 					{
+						// id: nanoid(),
 						name: "霍夫曼 V60",
 						initCd: 3,
 						keyPtCd: 3,
@@ -237,7 +240,7 @@
 				this.status = "ready"
 				this.timer = -(this.chosenMode.initCd + 1)
 			},
-			toEdit() {
+			toPlan() {
 				getApp().globalData.lastSelect = this.lastSelect
 				getApp().globalData.plans = this.plans
 				
@@ -252,10 +255,6 @@
 </script>
 
 <style>
-	.container {
-		padding: 16px 16px 0 16px;
-		height: 100%;
-	}
 	.loading {
 		display: flex;
 		height: 100%;
@@ -270,22 +269,22 @@
 		height: 100%;
 	}
 	.plan {
+		margin: 16px;
 		display: flex;
 		flex-direction: column;
 	}
-	.editBtn {
+	.detail {
+		font-size: 16px;
+		color: grey;
+		font-style: normal;
+		align-self: center;
+	}
+	.toPlanBtn {
 		align-self: flex-end;
 		margin-top: 12px;
 		font-size: 16px;
 		font-weight: 300;
 		color: cadetblue;
-	}
-	.detail {
-		margin-top: 24px;
-		font-size: 16px;
-		color: grey;
-		font-style: normal;
-		align-self: center;
 	}
 	.timer {
 		align-self: center;
@@ -299,20 +298,12 @@
 	.ctrlZone {
 		display: flex;
 		justify-content: space-around;
-		/* max-height: 15%; */
-		/* position: fixed;
-		left: 0;
-		bottom: 0;
 		width: 100%;
-		z-index: 1000; */
-		height: 100px;
-	}
-	.btn {
-		width: 64px;
+		margin-bottom: 32px;
 	}
 	.icon {
-		width: 100%;
-		max-height: 100%;
+		width: 64px;
+		height: 64px;
 	}
 	/* uni-data-select */
 	.uni-select__selector-item text {

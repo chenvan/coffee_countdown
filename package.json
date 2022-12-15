@@ -1,0 +1,25 @@
+{
+  "name": "coffee_countdown",
+  "version": "1.0.0",
+  "description": "微信小程序, 咖啡手冲计时提醒",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/chenvan/coffee_countdown.git"
+  },
+  "keywords": [
+    "weapp",
+    "uniapp",
+    "coffee",
+    "countdown"
+  ],
+  "author": "awang",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/chenvan/coffee_countdown/issues"
+  },
+  "homepage": "https://github.com/chenvan/coffee_countdown#readme"
+}
