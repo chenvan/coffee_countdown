@@ -1,20 +1,28 @@
 <template>
 	<view class="main">
-		<uni-forms :modelValue="fromData" label-position="top">
-			<uni-forms-item label="方案名" name="name">
-				<uni-easyinput type="text" v-model="fromData.name"></uni-easyinput>
-			</uni-forms-item>
-			<uni-forms-item label="开始倒数">
-				<uni-data-checkbox v-model="fromData.initCd" :localdata="range"></uni-data-checkbox>
-			</uni-forms-item>
-			<uni-forms-item label="关键时间点倒数">
-				<uni-data-checkbox v-model="fromData.keyPtCd" :localdata="range"></uni-data-checkbox>
-			</uni-forms-item>
-			<uni-forms-item label="关键时间点">
-				<uni-easyinput type="textarea" v-model="fromData.keyPts" placeholder="关键时间点, 用空格隔开" />
-			</uni-forms-item>
-		</uni-forms>
-		<button @click="onClick">确认</button>
+		<view class="part">
+			<view class="label">方案名</view>
+			<input class="input" v-model="name" />
+		</view>
+		<view class="part">
+			<view class="label">倒计时</view>
+			<checkbox-group @change="onChange($event)">
+				<checkbox class="checkUnit" :value="'init'" :checked="initCd">开始</checkbox>
+				<checkbox class="checkUnit" :value="'keyPt'" :checked="keyPtCd">关键时间点</checkbox>
+			</checkbox-group>
+		</view>
+		<view class="part">
+			<view class="label">关键时间点</view>
+			<!-- input type 不能使用 number 或者 digit -->
+			<input class="input" v-model="keyPts" />
+		</view>
+		<view class="part">
+			<view class="label">备注</view>
+			<textarea class="input" v-model="memo" />
+		</view>
+		<view class="ctrlZone">
+			<button @click="onClick">确认</button>
+		</view>	
 		<uni-popup ref="errMsg" type="center">
 			<uni-popup-dialog title="问题" :content="errMsg"></uni-popup-dialog>
 		</uni-popup>
@@ -28,21 +36,19 @@
 	export default {
 		data() {
 			return {
-				fromData: {
-					name: "",
-					initCd: 3,
-					keyPtCd: 3,
-					keyPts: "",
-				},
+				name: "",
+				initCd: 3,
+				keyPtCd: 3,
+				keyPts: "",
+				memo: "",
 				id: null,
-				errMsg: "",
-				range:[{"value": 3,"text": "是"}, {"value": 0,"text": "否"}]
+				errMsg: ""
 			}
 		},
 		methods: {
 			onClick() {
-				let name = this.fromData.name.trim()
-				let keyPtsList = this.fromData.keyPts.trim().split(/\s+/)
+				let name = this.name.trim()
+				let keyPtsList = this.keyPts.trim().split(/\s+/)
 				
 				if(name.length === 0) {
 					this.errMsg = "方案没有名字"
@@ -56,22 +62,25 @@
 					return
 				}
 				
-				// 还需要检查关键时间点的间隔要大于3?
-				
 				this.$refs.confirm.open()
+			},
+			onChange(e) {
+				this.initCd = e.detail.value.includes("init") ? 3 : 0
+				this.keyPtCd = e.detail.value.includes("keyPt") ? 3 : 0
 			},
 			onConfirm() {
 				//
-				let temp = this.fromData.keyPts.trim().split(/\s+/).map(value => Number(value))
+				let temp = this.keyPts.trim().split(/\s+/).map(value => Number(value))
 				temp.sort((a, b) => a - b)
 				
 				// console.log(temp)
 				
 				let plan = {
-					name: this.fromData.name,
-					initCd: this.fromData.initCd,
-					keyPtCd: this.fromData.keyPtCd,
-					keyPts: temp
+					name: this.name.trim(),
+					initCd: this.initCd,
+					keyPtCd: this.keyPtCd,
+					keyPts: temp,
+					memo: this.memo.trim()
 				}
 				
 				if(this.id === getApp().globalData.plans.length) {
@@ -89,10 +98,11 @@
 			if(options.id) {
 				this.id = options.id
 				let selectPlan = getApp().globalData.plans[options.id]
-				this.fromData.name = selectPlan.name
-				this.fromData.inidCd = selectPlan.inidCd
-				this.fromData.keyPtCd = selectPlan.keyPtCd
-				this.fromData.keyPts = selectPlan.keyPts.join(" ")
+				this.name = selectPlan.name
+				this.initCd = selectPlan.initCd
+				this.keyPtCd = selectPlan.keyPtCd
+				this.keyPts = selectPlan.keyPts.join(" ")
+				this.memo = selectPlan.memo
 			} else {
 				this.id = getApp().globalData.plans.length
 			}
@@ -102,9 +112,31 @@
 
 <style>
 	.main {
-		padding: 8px;
 		height: 100%;
 		display: flex;
 		flex-direction: column;
+	}
+	.part {
+		margin: 8px;
+	}
+	.label {
+		margin-bottom: 4px;
+		font-size: 20px;
+	}
+	.checkUnit {
+		margin-right: 8px;
+	}
+	.input {
+		background-color: white;
+		width: 100%;
+		min-height: 32px;
+	}
+	.ctrlZone {
+		position: fixed;
+		bottom: 32px;
+		right:0;
+		width: 100%;
+		display: flex;
+		justify-content: flex-end;
 	}
 </style>

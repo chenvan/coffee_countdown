@@ -167,28 +167,32 @@
 						name: "聪明杯",
 						initCd: 3,
 						keyPtCd: 3,
-						keyPts: [180, 210]
+						keyPts: [180, 210],
+						memo: ""
 					},
 					{
 						// id: nanoid(),
 						name: "爱乐压",
 						initCd: 3,
 						keyPtCd: 3,
-						keyPts: [120, 150]
+						keyPts: [120, 150],
+						memo: ""
 					},
 					{
 						// id: nanoid(),
 						name: "金龙鱼冲泡法",
 						initCd: 3,
 						keyPtCd: 3,
-						keyPts: [30, 60]
+						keyPts: [30, 60],
+						memo: ""
 					},
 					{
 						// id: nanoid(),
 						name: "霍夫曼 V60",
 						initCd: 3,
 						keyPtCd: 3,
-						keyPts: [45, 70, 90, 110, 180]
+						keyPts: [45, 70, 90, 110, 180],
+						memo: ""
 					},
 				],
 				
