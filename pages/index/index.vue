@@ -50,8 +50,8 @@
 	export default {
 		data() {
 			return {
-				lastSelect: null,
-				plans: [],
+				lastSelect: 0,
+				plans: null,
 				timer: null,
 				timeId: null,
 				status: "loading",
@@ -67,11 +67,9 @@
 				})
 			},
 			timerFormat() {
-				if(this.status === "loading") {
-					return ""
-				}else if(this.status === "ready") {
+				if(this.status === "ready") {
 					return "Ready"
-				}else if(this.timer === -(this.chosenMode.initCd + 1)) {
+				}else if(this.timer === 0 && this.status === "timing") {
 					return "Go"
 				}else {
 					let temp = Math.abs(this.timer)
@@ -79,19 +77,20 @@
 				}
 			},
 			detail() {
-				return this.chosenMode === null ? "" : `[${this.chosenMode.keyPts.join(", ")}]`
+				return this.chosenMode === undefined ? "" : `[${this.chosenMode.keyPts.join(", ")}]`
 			},
 			chosenMode() {
-				if(this.lastSelect !== null && this.plans.length > 0) {
-					return this.plans[this.lastSelect]
+				// console.log("compute", this.plans[this.lastSelect])
+				if(this.plans === null) {
+					return ""
 				} else {
-					return null
+					return this.plans[this.lastSelect] // could be undefined
 				}
 			},
 			beeps() {
 				let temp = []
 				
-				if(this.chosenMode !== null) {
+				if(this.chosenMode !== undefined) {
 					let {initCd, keyPtCd, keyPts} = this.chosenMode
 					
 					temp = temp.concat(range(-initCd, 0))
@@ -104,10 +103,10 @@
 				return temp
 			},
 			boops() {
-				let temp = [0]
+				let temp = []
 				
-				if(this.chosenMode !== null) {
-					temp = temp.concat(this.chosenMode.keyPts)
+				if(this.chosenMode !== undefined) {
+					temp = [0].concat(this.chosenMode.keyPts)
 				}
 				
 				return temp
@@ -115,18 +114,34 @@
 		},
 		watch: {
 			chosenMode() {
-				if(this.chosenMode !== null) {
+				console.log("watch", this.chosenMode)
+				if(this.chosenMode === undefined) {
+					this.status = "ready"
+				} else if(this.chosenMode !== "") {
 					this.clear()
 				}
 			},
 			timer(newT) {
 				// 只能发一种声音, boop 的权重比 beep 先
-				if(this.boops.includes(newT)) {
-					console.log(`${newT} boop!!!`)
-					boopAudioCtx.play()
-				} else if(this.beeps.includes(newT)) {
-					console.log(`${newT} beep!`)
-					beepAudioCtx.play()
+				if(this.status === "timing") {
+					if(this.boops.includes(newT)) {
+						console.log(`${newT} boop!!!`)
+						boopAudioCtx.play()
+					} else if(this.beeps.includes(newT)) {
+						console.log(`${newT} beep!`)
+						beepAudioCtx.play()
+					}
+				}
+			},
+			status() {
+				if(this.status === "timing") {
+					if(this.boops.includes(this.timer)) {
+						console.log(`${this.timer} boop!!!`)
+						boopAudioCtx.play()
+					} else if(this.beeps.includes(this.timer)) {
+						console.log(`${this.timer} beep!`)
+						beepAudioCtx.play()
+					}
 				}
 			}
 		},
@@ -210,6 +225,7 @@
 			
 		},
 		onShow () {
+			console.log("is plan change", getApp().globalData.isPlanChange)
 			if(getApp().globalData.isPlanChange) {
 				getApp().globalData.isPlanChange = false
 				this.lastSelect = getApp().globalData.lastSelect
@@ -227,7 +243,7 @@
 				this.timer++
 			},
 			start() {
-				if(this.timeId === null && this.lastSelect !== "") {
+				if(this.chosenMode !== undefined) {
 					this.timeId = setInterval(this.add, 1000)
 					this.status = "timing"
 				}
@@ -242,7 +258,7 @@
 			clear() {
 				this.stop()
 				this.status = "ready"
-				this.timer = -(this.chosenMode.initCd + 1)
+				this.timer = -this.chosenMode.initCd 
 			},
 			toPlan() {
 				getApp().globalData.lastSelect = this.lastSelect
@@ -251,8 +267,6 @@
 				uni.navigateTo({
 					url: "/pages/plan/plan"
 				})
-				
-				
 			}
 		}
 	}

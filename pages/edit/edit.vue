@@ -73,14 +73,12 @@
 				let temp = this.keyPts.trim().split(/\s+/).map(value => Number(value))
 				temp.sort((a, b) => a - b)
 				
-				// console.log(temp)
-				
 				let plan = {
 					name: this.name.trim(),
 					initCd: this.initCd,
 					keyPtCd: this.keyPtCd,
 					keyPts: temp,
-					memo: this.memo.trim()
+					memo: this.memo !== undefined ? this.memo.trim() : ""
 				}
 				
 				if(this.id === getApp().globalData.plans.length) {

@@ -1,20 +1,27 @@
 <template>
 	<view class="main">
-		<uni-swipe-action>
-			<uni-swipe-action-item 
-				v-for="(mode, index) in plans"
+		<view 
+			class="planZone"
+			@longpress="toggleMode"
+		>
+			<PlanItem
+				v-for="(plan, index) in plans"
 				:key="index"
-				:right-options="options"  
-				@click="onDel(index)" 
-			>
-				<view class="item" @click="toEdit(index)">
-					<view class="title">{{mode.name}}</view>
-					<view class="detail">{{mode.keyPts}}</view>
-				</view>
-			</uni-swipe-action-item>
-		</uni-swipe-action>
+				:id="index"
+				:item="plan"
+				:isDelMode="isDelMode"
+				:isSelected="!isDelMode ? null : delIdMap[index]"
+				@select="toggleDelIdState"
+			></PlanItem>
+		</view>
 		<view class="ctrlZone" >
-			<view @click="addPlan">
+			<view v-if="isDelMode" @click="toDelConfirm"> 
+				<image class="iconlite" src="/static/del.png" mode="widthFix"></image>
+			</view>
+			<view v-if="isDelMode" @click="selectAll">
+				<image class="iconlite" src="/static/sel_all.png" mode="widthFix"></image>
+			</view>
+			<view v-if="!isDelMode" @click="addPlan">
 				<image class="icon" src="/static/add.png" mode="widthFix"></image>
 			</view>
 		</view>
@@ -32,18 +39,13 @@
 		data() {
 			return {
 				plans: [],
-				delId: undefined,
-				options:[{
-					text: '删除',
-					style: {
-						backgroundColor: '#dd524d'
-					}
-				}]
+				isDelMode: false,
+				// delId: undefined,
+				delIdMap: [],
 			}
 		},
 		methods: {
-			onDel(id){
-				this.delId = id
+			toDelConfirm(){
 				this.$refs.delConfirm.open()
 			},
 			toEdit(id) {
@@ -51,31 +53,60 @@
 					url: `/pages/edit/edit?id=${id}`
 				})
 			},
+			toggleDelIdState(id) {
+				this.delIdMap[id] = !this.delIdMap[id]
+			},
 			addPlan() {
 				uni.navigateTo({
 					url: `/pages/edit/edit`
 				})
 			},
+			toggleMode() {
+				if(!this.isDelMode) {
+					this.isDelMode = true
+					this.delIdMap = Array(this.plans.length).fill(false)
+				} else {
+					this.isDelMode = false
+					this.delIdMap = []
+				}
+			},
+			selectAll() {
+				if(this.delIdMap.every(value => value === true)) {
+					this.delIdMap = Array(this.plans.length).fill(false)
+				} else {
+					this.delIdMap = Array(this.plans.length).fill(true)
+				}
+			},
 			async delPlan() {
 				let lastSelect = getApp().globalData.lastSelect
 				
-				if(lastSelect >= this.delId) {
-					getApp().globalData.lastSelect = lastSelect === this.delId ? 0 : lastSelect - 1
+				if(this.delIdMap[lastSelect]){
+					lastSelect = 0
+				} else {
+					let temp = this.delIdMap.slice(0, lastSelect).filter(state => state).length
+					lastSelect -= temp
+					// console.log(temp, lastSelect - temp)
 				}
 				
-				let shadowPlans = [...this.plans]
-				shadowPlans.splice(this.delId, 1)
-				this.plans = shadowPlans
+				
+				getApp().globalData.lastSelect = lastSelect
 
+				this.plans = this.plans.filter((plan, index) => !this.delIdMap[index])
+
+				this.delIdMap = Array(this.plans.length).fill(false)
+				
 				getApp().globalData.isPlanChange = true
 				// 在 Plan 进行删除后, 需要更新 globalData
 				getApp().globalData.plans = this.plans
 				
 				// save
-				await this.savePlans()
+				await Promise.all([
+					this.savePlans(),
+					this.saveLastSelect(lastSelect)
+				])
 				
 			},
-			async savePlans(newPlans) {
+			async savePlans() {
 				// 存 this.plans, 因此使用前必需先更新 plans
 				
 				// 保存不会对操作影响?
@@ -83,6 +114,16 @@
 					await uni.setStorage({
 						key: "plans",
 						data: this.plans
+					})
+				} catch(err) {
+					this.$refs.errMsg.open()
+				}
+			},
+			async saveLastSelect(lastSelect) {
+				try {
+					await uni.setStorage({
+						key: "lastSelect",
+						data: lastSelect
 					})
 				} catch(err) {
 					this.$refs.errMsg.open()
@@ -96,9 +137,13 @@
 			if(getApp().globalData.isEditChange) {
 				// Edit页面对方案进行了新增或者修改
 				this.plans = getApp().globalData.plans
-				await this.savePlans()
+				
+				// console.log(this.plans)
+				
 				getApp().globalData.isPlanChange = true
 				getApp().globalData.isEditChange = false
+				
+				await this.savePlans()
 			}
 		}
 	}
@@ -118,15 +163,8 @@
 		justify-content: center;
 		align-items: center;
 	}
-	.item {
-		padding: 4px 0px;
-	}
-	.title {
-		font-size: 24px;
-	}
-	.detail {
-		font-size: 12px;
-		font-weight: 100;
+	.planZone {
+		padding-bottom: 128px;
 	}
 	.ctrlZone {
 		position: fixed;
@@ -137,7 +175,11 @@
 		justify-content: space-around;
 	}
 	.icon {
-		width: 64px;
-		height: 64px;
+		width: 48px;
+		height: 48px;
+	}
+	.iconlite {
+		width: 32px;
+		height: 32px;
 	}
 </style>
